@@ -23,6 +23,7 @@ async function run() {
         const database = client.db("vintage_winery");
         const winesCollection = database.collection("wines");
         console.log('DB CONNECTED');
+
     }
     finally {
 
