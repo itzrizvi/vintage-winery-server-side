@@ -65,6 +65,13 @@ async function run() {
             res.json(result);
         });
 
+        // GET API for all orders JSON array value server
+        app.get('/orders', async (req, res) => {
+            const cursor = ordersCollection.find({});
+            const allOrder = await cursor.toArray();
+            res.send(allOrder);
+        });
+
     }
     finally {
         // await client.close();
