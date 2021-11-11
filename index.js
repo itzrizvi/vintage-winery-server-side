@@ -23,6 +23,8 @@ async function run() {
         await client.connect();
         const database = client.db("vintage_winery");
         const winesCollection = database.collection("wines");
+        const ordersCollection = database.collection("orders");
+        const usersCollection = database.collection("users");
         console.log('DB CONNECTED');
 
         // GET API FOR ALL WINES
@@ -38,6 +40,29 @@ async function run() {
             const query = { _id: ObjectId(WINEID) };
             const wine = await winesCollection.findOne(query);
             res.json(wine)
+        });
+
+        // POST API for orders
+        app.post('/orders', async (req, res) => {
+            const order = req.body;
+            const result = await ordersCollection.insertOne(order);
+            res.json(result)
+        });
+
+        // POST and PUT API FOR SAVING USER DATA
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.json(result);
+        });
+
+        app.put('/users', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: user };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.json(result);
         });
 
     }
