@@ -81,6 +81,18 @@ async function run() {
             res.json(result);
         });
 
+        // GET API for check admin or not
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === 'Admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin });
+        });
+
     }
     finally {
         // await client.close();
