@@ -93,7 +93,7 @@ async function run() {
             res.json({ admin: isAdmin });
         });
 
-        // PUT API for order status change
+        // PUT API for order status change by Admin
         app.put('/orders/:id', async (req, res) => {
             const ID = req.params.id;
             const filter = { _id: ObjectId(ID) };
@@ -102,6 +102,14 @@ async function run() {
             const result = await ordersCollection.updateOne(filter, updateDoc, options);
             res.json(result);
         });
+
+        // DELETE API for Order Delete by Admin
+        app.delete('/orders/:id', async (req, res) => {
+            const ID = req.params.id;
+            const query = { _id: ObjectId(ID) };
+            const result = await ordersCollection.deleteOne(query);
+            res.json(result);
+        })
 
     }
     finally {
