@@ -118,6 +118,14 @@ async function run() {
             res.json(result);
         });
 
+        // DELETE API for delete wine by Admin
+        app.delete('/wines/:id', async (req, res) => {
+            const ID = req.params.id;
+            const query = { _id: ObjectId(ID) };
+            const result = await winesCollection.deleteOne(query);
+            res.json(result);
+        })
+
     }
     finally {
         // await client.close();
