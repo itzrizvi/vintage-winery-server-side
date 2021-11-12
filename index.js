@@ -93,6 +93,16 @@ async function run() {
             res.json({ admin: isAdmin });
         });
 
+        // PUT API for order status change
+        app.put('/orders/:id', async (req, res) => {
+            const ID = req.params.id;
+            const filter = { _id: ObjectId(ID) };
+            const options = { upsert: true };
+            const updateDoc = { $set: { orderStatus: 'Shipped' } };
+            const result = await ordersCollection.updateOne(filter, updateDoc, options);
+            res.json(result);
+        });
+
     }
     finally {
         // await client.close();
