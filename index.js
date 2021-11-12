@@ -111,6 +111,13 @@ async function run() {
             res.json(result);
         })
 
+        // POST API for add new wine by Admin
+        app.post('/wines', async (req, res) => {
+            const newWine = req.body;
+            const result = await winesCollection.insertOne(newWine);
+            res.json(result);
+        });
+
     }
     finally {
         // await client.close();
