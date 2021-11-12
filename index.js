@@ -25,6 +25,7 @@ async function run() {
         const winesCollection = database.collection("wines");
         const ordersCollection = database.collection("orders");
         const usersCollection = database.collection("users");
+        const ratingsCollection = database.collection("ratings");
         console.log('DB CONNECTED');
 
         // GET API FOR ALL WINES
@@ -137,7 +138,21 @@ async function run() {
             const query = { _id: ObjectId(ID) };
             const result = await winesCollection.deleteOne(query);
             res.json(result);
-        })
+        });
+
+        // POST API for Ratings by all
+        app.post('/ratings', async (req, res) => {
+            const newRating = req.body;
+            const result = await ratingsCollection.insertOne(newRating);
+            res.json(result);
+        });
+
+        // GET API for all Ratings JSON array value to server
+        app.get('/ratings', async (req, res) => {
+            const cursor = ratingsCollection.find({});
+            const allRatings = await cursor.toArray();
+            res.send(allRatings);
+        });
 
     }
     finally {
