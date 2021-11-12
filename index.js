@@ -72,6 +72,19 @@ async function run() {
             res.send(allOrder);
         });
 
+        // GET API for Individual User orders JSON array value server
+        app.get('/orders/:email', async (req, res) => {
+            let query = {};
+            const email = req.params.email;
+            console.log(req.query.email)
+            if (email) {
+                query = { clientEmail: email }
+            }
+            const cursor = ordersCollection.find(query);
+            const allOrder = await cursor.toArray();
+            res.send(allOrder);
+        });
+
         // PUT API for make admin role
         app.put('/users/admin', async (req, res) => {
             const user = req.body;
@@ -103,7 +116,7 @@ async function run() {
             res.json(result);
         });
 
-        // DELETE API for Order Delete by Admin
+        // DELETE API for Order Delete by Admins and User
         app.delete('/orders/:id', async (req, res) => {
             const ID = req.params.id;
             const query = { _id: ObjectId(ID) };
