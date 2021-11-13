@@ -161,11 +161,12 @@ async function run() {
 }
 run().catch(console.dir);
 
-
+// Server Opening
 app.get('/', (req, res) => {
     res.send('Hello From Vintage Winery!')
 })
 
+// Listening PORT
 app.listen(port, () => {
     console.log(`Listening to PORT : ${port}`)
 })
