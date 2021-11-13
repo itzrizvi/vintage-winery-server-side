@@ -77,7 +77,6 @@ async function run() {
         app.get('/orders/:email', async (req, res) => {
             let query = {};
             const email = req.params.email;
-            console.log(req.query.email)
             if (email) {
                 query = { clientEmail: email }
             }
