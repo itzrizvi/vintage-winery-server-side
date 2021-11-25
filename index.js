@@ -2,12 +2,30 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
+const admin = require("firebase-admin");
 const ObjectId = require('mongodb').ObjectId;
 require('dotenv').config();
 
 // Creating APP and PORT
 const app = express();
 const port = process.env.PORT || 5000;
+
+// VERIFY TOKEN SDK
+admin.initializeApp({
+    credential: admin.credential.cert({
+        type: process.env.FIREBASE_TYPE,
+        project_id: process.env.FIREBASE_PROJECT_ID,
+        private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+        private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        client_email: process.env.FIREBASE_CLIENT_EMAIL,
+        client_id: process.env.FIREBASE_CLIENT_ID,
+        auth_uri: process.env.FIREBASE_AUTH_URI,
+        token_uri: process.env.FIREBASE_TOKEN_URI,
+        auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+        client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+
+    })
+});
 
 // MIDDLE WARE
 app.use(cors());
@@ -16,6 +34,22 @@ app.use(express.json());
 // DB CREDENTIALS
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.w9ewo.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// VERIFY TOKEN FUNCTION
+async function verifyToken(req, res, next) {
+    if (req.headers?.authorization?.startsWith('Bearer ')) {
+        const token = req.headers.authorization.split(' ')[1];
+
+        try {
+            const decodedUser = await admin.auth().verifyIdToken(token);
+            req.decodedEmail = decodedUser.email;
+        }
+        catch {
+
+        }
+    }
+    next();
+}
 
 // ASYNC FUNCTION FOR API's
 async function run() {
@@ -87,12 +121,21 @@ async function run() {
         });
 
         // PUT API for make admin role
-        app.put('/users/admin', async (req, res) => {
+        app.put('/users/admin', verifyToken, async (req, res) => {
             const user = req.body;
-            const filter = { email: user.email };
-            const updateDoc = { $set: { role: 'Admin' } };
-            const result = await usersCollection.updateOne(filter, updateDoc);
-            res.json(result);
+            const requester = req.decodedEmail;
+            if (requester) {
+                const requesterAccount = await usersCollection.findOne({ email: requester });
+                if (requesterAccount.role === 'Admin') {
+                    const filter = { email: user.email };
+                    const updateDoc = { $set: { role: 'Admin' } };
+                    const result = await usersCollection.updateOne(filter, updateDoc);
+                    res.json(result);
+                }
+            }
+            else {
+                res.status(403).json({ message: 'You Do Not Have Access' })
+            }
         });
 
         // GET API for check admin or not
@@ -108,36 +151,60 @@ async function run() {
         });
 
         // PUT API for order status change by Admin
-        app.put('/orders/:id', async (req, res) => {
+        app.put('/orders/:id', verifyToken, async (req, res) => {
             const ID = req.params.id;
-            const filter = { _id: ObjectId(ID) };
-            const options = { upsert: true };
-            const updateDoc = { $set: { orderStatus: 'Shipped' } };
-            const result = await ordersCollection.updateOne(filter, updateDoc, options);
-            res.json(result);
+            const requester = req.decodedEmail;
+            if (requester) {
+                const requesterAccount = await usersCollection.findOne({ email: requester });
+                if (requesterAccount.role === 'Admin') {
+                    const filter = { _id: ObjectId(ID) };
+                    const options = { upsert: true };
+                    const updateDoc = { $set: { orderStatus: 'Shipped' } };
+                    const result = await ordersCollection.updateOne(filter, updateDoc, options);
+                    res.json(result);
+                }
+            }
         });
 
         // DELETE API for Order Delete by Admins and User
-        app.delete('/orders/:id', async (req, res) => {
+        app.delete('/orders/:id', verifyToken, async (req, res) => {
             const ID = req.params.id;
-            const query = { _id: ObjectId(ID) };
-            const result = await ordersCollection.deleteOne(query);
-            res.json(result);
-        })
+            const requester = req.decodedEmail;
+            if (requester) {
+                const requesterAccount = await usersCollection.findOne({ email: requester });
+                if (requesterAccount.role === 'Admin') {
+                    const query = { _id: ObjectId(ID) };
+                    const result = await ordersCollection.deleteOne(query);
+                    res.json(result);
+                }
+            }
+        });
 
         // POST API for add new wine by Admin
-        app.post('/wines', async (req, res) => {
+        app.post('/wines', verifyToken, async (req, res) => {
             const newWine = req.body;
-            const result = await winesCollection.insertOne(newWine);
-            res.json(result);
+            const requester = req.decodedEmail;
+            if (requester) {
+                const requesterAccount = await usersCollection.findOne({ email: requester });
+                if (requesterAccount.role === 'Admin') {
+                    const result = await winesCollection.insertOne(newWine);
+                    res.json(result);
+                }
+            }
         });
 
         // DELETE API for delete wine by Admin
-        app.delete('/wines/:id', async (req, res) => {
+        app.delete('/wines/:id', verifyToken, async (req, res) => {
             const ID = req.params.id;
-            const query = { _id: ObjectId(ID) };
-            const result = await winesCollection.deleteOne(query);
-            res.json(result);
+            const requester = req.decodedEmail;
+            if (requester) {
+                const requesterAccount = await usersCollection.findOne({ email: requester });
+                if (requesterAccount.role === 'Admin') {
+                    const query = { _id: ObjectId(ID) };
+                    const result = await winesCollection.deleteOne(query);
+                    res.json(result);
+                }
+            }
         });
 
         // POST API for Ratings by all
