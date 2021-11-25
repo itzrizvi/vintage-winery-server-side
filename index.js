@@ -26,6 +26,7 @@ async function run() {
         const ordersCollection = database.collection("orders");
         const usersCollection = database.collection("users");
         const ratingsCollection = database.collection("ratings");
+        // Confirm DB CONNECT TO SERVER
         console.log('DB CONNECTED');
 
         // GET API FOR ALL WINES
