@@ -179,17 +179,12 @@ async function run() {
         });
 
         // DELETE API for Order Delete by Admins and User
-        app.delete('/orders/:id', verifyToken, async (req, res) => {
+        app.delete('/orders/:id', async (req, res) => {
             const ID = req.params.id;
-            const requester = req.decodedEmail;
-            if (requester) {
-                const requesterAccount = await usersCollection.findOne({ email: requester });
-                if (requesterAccount.role === 'Admin') {
-                    const query = { _id: ObjectId(ID) };
-                    const result = await ordersCollection.deleteOne(query);
-                    res.json(result);
-                }
-            }
+            const query = { _id: ObjectId(ID) };
+            const result = await ordersCollection.deleteOne(query);
+            res.json(result);
+
         });
 
         // POST API for add new wine by Admin
