@@ -17,6 +17,6 @@
     "express": "^4.17.1",
     "firebase-admin": "^10.0.0",
     "mongodb": "^4.1.4",
-    "node-modules": "^1.0.1"
+    "node-modules": "^0.0.1"
   }
 }
