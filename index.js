@@ -118,12 +118,17 @@ async function run() {
         app.get('/orders/:email', verifyToken, async (req, res) => {
             let query = {};
             const email = req.params.email;
-            if (email) {
-                query = { clientEmail: email }
+            const userEmailCheckQuery = { email: email };
+            const userCheck = usersCollection.findOne(userEmailCheckQuery);
+            if (userCheck) {
+                if (email) {
+                    query = { clientEmail: email }
+                }
+                const cursor = ordersCollection.find(query);
+                const allOrder = await cursor.toArray();
+                res.send(allOrder);
             }
-            const cursor = ordersCollection.find(query);
-            const allOrder = await cursor.toArray();
-            res.send(allOrder);
+
         });
 
         // PUT API for make admin role
