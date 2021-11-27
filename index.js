@@ -116,17 +116,18 @@ async function run() {
 
         // GET API for Individual User orders JSON array value server
         app.get('/orders/:email', verifyToken, async (req, res) => {
+            const requester = req.decodedEmail;
             let query = {};
             const email = req.params.email;
-            const userEmailCheckQuery = { email: email };
-            const userCheck = usersCollection.findOne(userEmailCheckQuery);
-            if (userCheck) {
+            if (requester === email) {
                 if (email) {
                     query = { clientEmail: email }
                 }
                 const cursor = ordersCollection.find(query);
                 const allOrder = await cursor.toArray();
                 res.send(allOrder);
+            } else {
+                res.status(401).json({ message: 'User Not Authorized' })
             }
 
         });
